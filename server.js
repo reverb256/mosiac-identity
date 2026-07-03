@@ -18,18 +18,25 @@ const path = require('path');
 
 const { initDatabase } = require('./src/sqlite-adapter');
 const identityRoutes = require('./src/routes');
+const { detectLocale } = require('./i18n');
 
-// ─── Config ──────────────────────────────────────────────
+// ─── Config ──────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.MOSIAC_PORT || '3002', 10);
 const HOST = process.env.MOSIAC_HOST || '0.0.0.0';
 
-// ─── Init ────────────────────────────────────────────────
+// ─── Init ────────────────────────────────────────────────────────────────
 initDatabase();
 console.log(`  Mosiac identity DB initialized`);
 
-// ─── App ─────────────────────────────────────────────────
+// ─── App ─────────────────────────────────────────────────────────────────
 const app = express();
 app.use(express.json({ limit: '1mb' }));
+
+// Attach locale detection to req for downstream use
+app.use((req, res, next) => {
+  req.locale = detectLocale(req);
+  next();
+});
 
 // CORS for cross-origin from Haven
 app.use((req, res, next) => {
@@ -40,17 +47,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// ─── Routes ──────────────────────────────────────────────
+// ─── Routes ──────────────────────────────────────────────────────────────
 // Identity/QR/contacts/signing at /mosiac/*
 app.use('/mosiac', identityRoutes);
 
 // Health at root
 app.get('/health', (req, res) => res.json({ ok: true, service: 'mosiac-identity' }));
 
-// ─── Static files (identity SPA) ─────────────────────────
+// ─── Static files (identity SPA) ─────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─── Start ───────────────────────────────────────────────
+// ─── Start ───────────────────────────────────────────────────────────────
 app.listen(PORT, HOST, () => {
   console.log(`  Mosiac identity service running on http://${HOST}:${PORT}`);
   console.log(`  API:     http://${HOST}:${PORT}/mosiac/`);

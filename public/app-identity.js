@@ -61,12 +61,12 @@ async function checkConnection() {
   try {
     const res = await fetch(`${API}/health`);
     if (res.ok) {
-      $('conn-status').textContent = 'connected';
+      $('conn-status').textContent = window.t ? window.t('mosiac.footer_connected') : 'connected';
       $('conn-status').classList.add('connected');
       return true;
     }
   } catch { /* offline */ }
-  $('conn-status').textContent = 'disconnected';
+  $('conn-status').textContent = window.t ? window.t('mosiac.footer_disconnected') : 'disconnected';
   $('conn-status').classList.remove('connected');
   return false;
 }
@@ -102,7 +102,8 @@ async function beginRegistration() {
     $('register-step1').classList.add('hidden');
     $('register-step2').classList.remove('hidden');
   } catch (err) {
-    alert('Registration failed: ' + err.message);
+    const msg = window.t ? window.t('mosiac.errors.registration_failed', { message: err.message }) : 'Registration failed: ' + err.message;
+    alert(msg);
     showView('splash');
   }
 }
@@ -126,7 +127,7 @@ async function registerPasskey() {
     // Call WebAuthn API
     const credential = await navigator.credentials.create({ publicKey: options });
 
-    if (!credential) throw new Error('Passkey registration cancelled');
+    if (!credential) throw new Error(window.t ? window.t('mosiac.errors.passkey_cancelled') : 'Passkey registration cancelled');
 
     // Format the response for the server
     const credentialJSON = {
@@ -156,7 +157,8 @@ async function registerPasskey() {
     $('register-step2').classList.add('hidden');
     $('register-complete').classList.remove('hidden');
   } catch (err) {
-    alert('Passkey registration failed: ' + err.message);
+    const msg = window.t ? window.t('mosiac.errors.passkey_failed', { message: err.message }) : 'Passkey registration failed: ' + err.message;
+    alert(msg);
   }
 }
 
@@ -186,7 +188,7 @@ async function beginLogin() {
 
     const credential = await navigator.credentials.get({ publicKey: options });
     if (!credential) {
-      $('login-error').textContent = 'Authentication cancelled.';
+      $('login-error').textContent = window.t ? window.t('mosiac.errors.auth_cancelled') : 'Authentication cancelled.';
       $('login-error').classList.remove('hidden');
       return;
     }
@@ -219,7 +221,7 @@ async function beginLogin() {
 
     await loadDashboard();
   } catch (err) {
-    $('login-error').textContent = 'Login failed: ' + err.message;
+    $('login-error').textContent = window.t ? window.t('mosiac.errors.login_failed', { message: err.message }) : 'Login failed: ' + err.message;
     $('login-error').classList.remove('hidden');
   }
 }
@@ -261,7 +263,7 @@ async function loadQR(pubkey) {
     const svg = await res.text();
     container.innerHTML = svg;
   } catch (err) {
-    container.innerHTML = '<p class="error">QR unavailable</p>';
+    container.innerHTML = `<p class="error">${window.t ? window.t('mosiac.errors.qr_unavailable') : 'QR unavailable'}</p>`;
   }
 }
 
@@ -278,14 +280,15 @@ async function loadContacts() {
     count.textContent = data.contacts.length;
 
     if (data.contacts.length === 0) {
-      list.innerHTML = '<p class="hint">No contacts yet. Scan a QR code to add one.</p>';
+      list.innerHTML = `<p class="hint">${window.t ? window.t('mosiac.errors.no_contacts') : 'No contacts yet. Scan a QR code to add one.'}</p>`;
       return;
     }
 
+    const unknownLabel = window.t ? window.t('mosiac.errors.contact_unknown') : 'Unknown';
     list.innerHTML = data.contacts.map(c => `
       <div class="contact-item">
         <div>
-          <div class="label">${c.label || 'Unknown'}</div>
+          <div class="label">${c.label || unknownLabel}</div>
           <div class="pubkey">${c.pubkey.slice(0, 24)}…</div>
         </div>
         <button class="remove" data-pubkey="${c.pubkey}">✕</button>
@@ -326,7 +329,7 @@ async function scanQR() {
     }
 
     const r = await res.json();
-    result.innerHTML = `<p style="color: var(--green)">✓ Added contact: ${r.fingerprint}</p>`;
+    result.innerHTML = `<p style="color: var(--green)">${window.t ? window.t('mosiac.errors.contact_added', { fingerprint: r.fingerprint }) : '✓ Added contact: ' + r.fingerprint}</p>`;
     input.value = '';
     await loadContacts();
   } catch (err) {
@@ -358,7 +361,8 @@ async function signData() {
     result.classList.remove('hidden');
     $('verify-result').classList.add('hidden');
   } catch (err) {
-    alert('Signing failed: ' + err.message);
+    const msg = window.t ? window.t('mosiac.errors.signing_failed', { message: err.message }) : 'Signing failed: ' + err.message;
+    alert(msg);
   }
 }
 
@@ -376,8 +380,8 @@ async function verifyData() {
     const data = await res.json();
     result.classList.remove('hidden');
     result.innerHTML = data.verified
-      ? '<p style="color: var(--green)">✓ Signature verified</p>'
-      : '<p style="color: var(--red)">✗ Signature invalid</p>';
+      ? `<p style="color: var(--green)">${window.t ? window.t('mosiac.errors.verified_ok') : '✓ Signature verified'}</p>`
+      : `<p style="color: var(--red)">${window.t ? window.t('mosiac.errors.verified_bad') : '✗ Signature invalid'}</p>`;
   } catch (err) {
     result.innerHTML = `<p class="error">${err.message}</p>`;
   }
@@ -389,27 +393,30 @@ async function showIdentities() {
   showView('existingIdentities');
   try {
     const res = await fetch(`${API}/identity`);
-    if (!res.ok) throw new Error('Failed to load');
+    if (!res.ok) throw new Error(window.t ? window.t('mosiac.errors.identity_failed_load') : 'Failed to load');
     const data = await res.json();
     const list = $('identities-list');
 
     if (data.identities.length === 0) {
-      list.innerHTML = '<p class="hint">No identities on this device.</p>';
+      list.innerHTML = `<p class="hint">${window.t ? window.t('mosiac.errors.no_identities') : 'No identities on this device.'}</p>`;
       return;
     }
 
+    const unnamedText = window.t ? window.t('mosiac.errors.identity_unnamed') : 'Unnamed';
+    const currentText = window.t ? window.t('mosiac.errors.identity_current') : '✓ current';
     list.innerHTML = data.identities.map(id => `
       <div class="contact-item">
         <div>
-          <div class="label">${id.label || 'Unnamed'}</div>
+          <div class="label">${id.label || unnamedText}</div>
           <div class="pubkey">${id.pubkey.slice(0, 32)}…</div>
-          <div class="pubkey" style="font-size:0.7rem">Created: ${new Date(id.created_at + 'Z').toLocaleString()}</div>
+          <div class="pubkey" style="font-size:0.7rem">${window.t ? window.t('mosiac.register_created') : 'Created'}: ${new Date(id.created_at + 'Z').toLocaleString()}</div>
         </div>
-        ${id.is_current ? '<span style="color:var(--green)">✓ current</span>' : ''}
+        ${id.is_current ? `<span style="color:var(--green)">${currentText}</span>` : ''}
       </div>
     `).join('');
   } catch (err) {
-    $('identities-list').innerHTML = `<p class="error">${err.message}</p>`;
+    const msg = window.t ? window.t('mosiac.errors.load_failed', { message: err.message }) : 'Failed to load: ' + err.message;
+    $('identities-list').innerHTML = `<p class="error">${msg}</p>`;
   }
 }
 
@@ -463,6 +470,13 @@ async function init() {
       registerPasskey();
     }
   });
+
+  // Language switcher
+  const langSelect = document.getElementById('lang-select');
+  if (langSelect && window.MosiacI18n) {
+    langSelect.value = window.MosiacI18n.locale;
+    langSelect.addEventListener('change', (e) => window.MosiacI18n.setLocale(e.target.value));
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
