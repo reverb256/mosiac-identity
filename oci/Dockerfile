@@ -18,12 +18,13 @@ WORKDIR /app
 
 # Copy manifest first (layer caching)
 COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts 2>/dev/null || npm ci --omit=dev
+RUN npm ci --omit=dev
 # ^ --ignore-scripts skips better-sqlite3 build if it fails
 
 # Copy source
 COPY server.js start.sh ./
 COPY src/ src/
+COPY i18n/ i18n/
 COPY public/ public/
 
 ENV MOSIAC_PORT=3002
