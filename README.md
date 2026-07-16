@@ -2,7 +2,7 @@
 
 Self-sovereign identity for everyone. Ed25519 keys, WebAuthn passkeys, QR contact exchange.
 
-**Part of the [Mosiac](https://github.com/reverb256/Mosiac) project.**
+**Part of the [Mosaic](https://github.com/reverb256/Mosaic) project.**
 
 ## How It Works
 

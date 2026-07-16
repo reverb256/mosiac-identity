@@ -13,8 +13,8 @@ pkg update && pkg upgrade -y
 pkg install nodejs git -y
 
 # 3. Download Mosiac
-git clone https://github.com/reverb256/Mosiac
-cd Mosiac
+git clone https://github.com/reverb256/Mosaic
+cd Mosaic
 
 # 4. Start the identity service
 npm start

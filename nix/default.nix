@@ -49,7 +49,7 @@ pkgs.buildNpmPackage {
 
   meta = {
     description = "Mosiac identity service — Ed25519 keys, WebAuthn, QR exchange";
-    homepage = "https://github.com/reverb256/Mosiac";
+    homepage = "https://github.com/reverb256/Mosaic";
     license = lib.licenses.agpl3Only;
     platforms = lib.platforms.all;
     maintainers = [];
