@@ -9,15 +9,15 @@
     "quickstart": "node server.js"
   },
   "dependencies": {
-    "express": "^4.21.0",
+    "express": "^5.2.1",
     "qrcode": "^1.5.4",
-    "@simplewebauthn/server": "^9.0.0",
+    "@simplewebauthn/server": "^14.0.2",
     "tweetnacl": "^1.0.3",
     "tweetnacl-util": "^0.15.1"
   },
   "optionalDependencies": {
-    "better-sqlite3": "^11.7.0",
-    "sql.js": "^1.11.0"
+    "better-sqlite3": "^13.0.3",
+    "sql.js": "^1.14.2"
   },
   "engines": {
     "node": ">=18.0.0"
